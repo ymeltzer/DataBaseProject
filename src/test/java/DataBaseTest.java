@@ -5,6 +5,7 @@ import net.sf.jsqlparser.schema.Database;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
@@ -426,5 +427,121 @@ public class DataBaseTest {
         assertTrue(entries.get(1).getKey().equals(3.5));
 
     }
+    /*
+   I test my btree method for getting all values whos key is less than given key
+    */
+    @Test
+    public void btreeGetMethods1() throws JSQLParserException {
+       createTwoTables();
+       addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getLessThan(3.5);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.5)<0);//assert that each returned value from the btree is less than 3.5 as desired
+        }
+
+    }
+    /*
+   I test my btree method for getting all values whos key is greater than given key
+    */
+    @Test
+    public void btreeGetMethods2() throws JSQLParserException {
+      createTwoTables();
+      addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getGreaterThan(3.0);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.0)>0);//assert that each returned value from the btree is greater than 3.0 as desired
+        }
+
+    }
+    /*
+   I test my btree method for getting all values who's key is greater than or equal to given key
+    */
+    @Test
+    public void btreeGetMethods3() throws JSQLParserException {
+       createTwoTables();
+       addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getGreaterThanEquals(3.42);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.42)>=0);//assert that each returned value from the btree is greater than 3.0 as desired
+        }
+
+    }
+    /*
+   I test my btree method for getting all values whos less than or equal to given key
+    */
+    @Test
+    public void btreeGetMethods4() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getLessThanEquals(3.5);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.5)<=0);//assert that each returned value from the btree is greater than 3.0 as desired
+        }
+
+    }
+    /*
+    I test my btree method for getting all values whos key is not equal to given key
+     */
+    @Test
+    public void btreeGetMethods5() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getNotEquals(3.0);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.0)!=0);//assert that each returned value from the btree is greater than 3.0 as desired
+        }
+
+    }
+    /*
+    I test my btree method for getting all values with given key
+     */
+    @Test
+    public void btreeGetMethods6() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        //I should now have two indexes; gpa, and Primary key column
+        dataBase1.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
+        BTree<String, Row> st = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA");
+
+        HashSet<Row> entries = new HashSet<>();
+        entries.addAll(dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").get(3.0));
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        //I use this index to receive the GPA column from my hashset
+        for(Row r : entries){
+            assertTrue(r.getCell(index).compareTo(3.0)==0);//assert that each returned value from the btree is greater than 3.0 as desired
+        }
+
+    }
+
 
 }
