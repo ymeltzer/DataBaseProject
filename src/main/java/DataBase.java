@@ -67,76 +67,16 @@ public class DataBase{
         ResultSet resultSet12 = dataBase.execute("UPDATE YCStudent SET GPA=3.0,Class='Super Senior' WHERE BannerID=800012245;");
         dataBase.printDataBase();
 
+//        ResultSet resultSet13 = dataBase.execute("CREATE INDEX SSNum_Index on YCStudent (SSNum);");
+  //      dataBase.printDataBase();
+   //     resultSet13.printResultSet();
 
 /**
-
-
-
-        DataBase dataBase = new DataBase();
         SQLParser parser = new SQLParser();
-        UpdateQuery result = (UpdateQuery)parser.parse("UPDATE YCStudent SET GPA=3.0,Class='Super Senior' WHERE BannerID=800012345;");
-        result = (UpdateQuery)parser.parse("UPDATE YCStudent SET GPA=3.0,Class='Super Senior';");
+        String s = "CREATE INDEX SSNum_Index on YCStudent (SSNum);";
+        CreateIndexQuery result = (CreateIndexQuery) parser.parse(s);
         System.out.println();
- //SQLParser parser = new SQLParser();
-       String query = "CREATE TABLE YCStudent"
-                + "("
-                + " BannerID int,"
-                + " SSNum int UNIQUE,"
-                + " Class varchar(255),"
-                + " FirstName varchar(255),"
-                + " LastName varchar(255) NOT NULL,"
-                + " GPA decimal(1,2) DEFAULT 0.00,"
-                + " CurrentStudent boolean DEFAULT true,"
-                + " PRIMARY KEY (BannerID)"
-                + ");";
-
-       //CreateTableQuery result = (CreateTableQuery) parser.parse(query);
-
-      // System.out.print("");
-
-        dataBase.execute(query);
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Ploni','Almoni',4.0,800012345,'Super Senior');");
-        //dataBase.execute("DELETE From YCStudent;");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',3.4,800092345,'Freshman');");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yosef','Epstein',3.42,800002345,'Freshman');");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Aaron','Shakib',3.0,800012745);");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Gav','Sturm',3.2,800012845);");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Meltzer',3.4,800012945);");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Dad','Meltzer',3.2,800012245);");
-
-    */
-
-      /*  for(Object t: dataBase.getDataBase()){
-            Table table =(Table) t;
-            dataBase.printTable(table);
-        }
-       dataBase.execute("DELETE FROM YCStudent WHERE CurrentStudent=true AND GPA < 3.0;");
-        System.out.println();
-        for(Object t: dataBase.getDataBase()){
-            Table table =(Table) t;
-            dataBase.printTable(table);
-        }
-
 */
-
-        // InsertQuery result = (InsertQuery)parser.parse("INSERT INTO YCStudent (FirstName, LastName, GPA, Class, BannerID) VALUES ('Ploni','Almoni',4.0, 'Senior',800012345);");
-        //System.out.println();
-       //dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Ploni','Almoni',4.0,800012345);");
-
-       // dataBase.execute("DELETE FROM YCStudent WHERE Class='Super Senior' AND GPA > 3.0;");
-       // System.out.println();
-
-
-       //SelectQuery result = (SelectQuery)parser.parse("select * from YCStudents;");
-       //DeleteQuery c = (DeleteQuery)parser.parse("DELETE FROM YCStudent;");
-        //DeleteQuery result = (DeleteQuery)parser.parse("DELETE FROM YCStudent WHERE Class='Super Senior' AND GPA < 3.0;");
-        //NOTE: for some strange reason JSQLParser can't handle the "*" in "DELETE * FROM" - wierd!!
-        //result = (DeleteQuery)parser.parse("DELETE FROM YCStudent;");
-   //     Condition condition = (Condition) result.getWhereCondition().getRightOperand();
-       // System.out.println(condition.getLeftOperand().toString());
-       // query = "CREATE INDEX SSNum_Index on YCStudent (SSNum);";
-      //  CreateIndexQuery result9 = (CreateIndexQuery)parser.parse(query);
-       // System.out.println();
 
 
     }
@@ -160,17 +100,18 @@ public class DataBase{
      */
     public ResultSet execute(String query) throws JSQLParserException {//takes object and deciphers the type of command object it is
         SQLQuery sqlQuery = parseQuery(query);
-        try {
+       try {
 
             if (sqlQuery instanceof CreateTableQuery) {
                 CreateTableQuery createTableQuery = (CreateTableQuery) sqlQuery;
                 this.dataBase.add(new Table(createTableQuery));
-                return new ResultSet(true);
+                return new ResultSet(getTableByName(createTableQuery.getTableName()));
             }
-        }
-        catch(Exception exception){
-            return new ResultSet(false, exception);
-        }
+       }
+            catch(Exception exception){
+           return new ResultSet(false, exception);
+
+         }
 
         if(sqlQuery instanceof InsertQuery){
             try {
@@ -188,15 +129,16 @@ public class DataBase{
         }
 
         if(sqlQuery instanceof DeleteQuery){
-                try {
+               try {
                     DeleteQuery deleteQuery = (DeleteQuery) sqlQuery;
 
                     Deleter deleter = new Deleter(deleteQuery, getTableByName(deleteQuery.getTableName()), this);
                     deleter.deleteRow();
                     return new ResultSet(true);
-                }
+               }
                 catch(Exception exception){
-                    return new ResultSet(false, exception);
+
+                   return new ResultSet(false, exception);
                 }
 
 
@@ -208,7 +150,7 @@ public class DataBase{
 
                     table = new Selecter(selectQuery, table).doSelect();
                     return new ResultSet(table);
-                }
+               }
                 catch(Exception exception) {
                 return new ResultSet(false, exception);
             }
@@ -217,7 +159,25 @@ public class DataBase{
         }
 
         if(sqlQuery instanceof CreateIndexQuery){
-           CreateIndexQuery createIndexQuery = (CreateIndexQuery) sqlQuery;
+            try {
+
+                CreateIndexQuery createIndexQuery = (CreateIndexQuery) sqlQuery;
+                Table table = getTableByName(createIndexQuery.getTableName());
+                int index = table.getColumnIndex(createIndexQuery.getColumnName());
+                Indexer indexer = new Indexer(table, createIndexQuery);
+
+                table.getBTrees().add(indexer.doIndex());
+
+                return new ResultSet(true);
+                }
+
+                catch(Exception exception){
+                return new ResultSet(false, exception);
+
+                }
+
+
+
         }
 
 

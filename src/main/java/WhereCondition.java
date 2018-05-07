@@ -4,9 +4,10 @@ import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.SQLQuery;
 import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.Condition;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
-public class WhereCondition <V>{
+public class WhereCondition{
 
     private ArrayList<Row> rowsMeetConditions;
     private Condition condition;
@@ -147,6 +148,122 @@ public class WhereCondition <V>{
 
         }
         return null;
+    }
+
+    public HashSet<Row> implementIndexedCondition(HashSet<Row> meetsCondition, Condition c){
+
+        switch(c.getOperator()){
+
+            case AND:
+                if(c.getRightOperand() instanceof Condition && c.getLeftOperand() instanceof Condition){
+
+                    HashSet<Row> temp1 = implementIndexedCondition(meetsCondition, (Condition) c.getRightOperand());
+                    HashSet<Row> temp2 =implementIndexedCondition(meetsCondition, (Condition) c.getLeftOperand());
+
+                    for(Row r: temp1){
+                        if(temp2.contains(r)){
+                            meetsCondition.add(r);
+                        }
+                    }
+
+                        return meetsCondition;
+
+                }
+            case OR:
+                if(c.getRightOperand() instanceof Condition || c.getLeftOperand() instanceof Condition){
+                    meetsCondition.addAll(implementIndexedCondition(meetsCondition, (Condition) c.getRightOperand()));
+                    meetsCondition.addAll(implementIndexedCondition(meetsCondition, (Condition) c.getLeftOperand()));
+
+
+                        return meetsCondition;
+
+                }
+
+
+            case NOT_EQUALS:
+                ColumnID id = (ColumnID) c.getLeftOperand();//turn left operand into column id
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+                String leftOperandVal = c.getLeftOperand().toString();
+
+                int index = table.getColumnIndex(id.getColumnName());
+                Object rightOperand = castCellsVal( (String)c.getRightOperand(), table.getColumnNames().get(index));
+
+
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getNotEquals((Comparable) rightOperand));
+                return meetsCondition;
+
+            case LESS_THAN:
+                id = (ColumnID) c.getLeftOperand();
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+
+                index = table.getColumnIndex(id.getColumnName());
+                rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
+
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getLessThan((Comparable) rightOperand));
+                    return meetsCondition;
+
+
+            case EQUALS:
+                id = (ColumnID) c.getLeftOperand();
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+
+                index = table.getColumnIndex(id.getColumnName());
+                rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
+
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).get((Comparable) rightOperand));
+                return meetsCondition;
+
+
+
+            case LESS_THAN_OR_EQUALS:
+
+                id = (ColumnID) c.getLeftOperand();
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+
+                index = table.getColumnIndex(id.getColumnName());
+                rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getLessThan((Comparable) rightOperand));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).get((Comparable) rightOperand));
+
+                    return meetsCondition;
+
+
+            case GREATER_THAN:
+                id = (ColumnID) c.getLeftOperand();
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+
+                index = table.getColumnIndex(id.getColumnName());
+                rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
+
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getGreaterThan(((Comparable) rightOperand)));
+
+                return meetsCondition;
+
+            case GREATER_THAN_OR_EQUALS:
+
+                id = (ColumnID) c.getLeftOperand();
+                if(!this.table.isColumnInTable(id.getColumnName())){
+                    throw new IllegalArgumentException(id.getColumnName()+ " is not a column in " + this.table.getTableName());
+                }
+
+                index = table.getColumnIndex(id.getColumnName());
+                rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getGreaterThan(((Comparable) rightOperand)));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).get((Comparable) rightOperand));
+
+                return meetsCondition;
+        }
+        return meetsCondition;
     }
 
     private Object castCellsVal(String toBeParsed, ColumnDescription columnDescription){

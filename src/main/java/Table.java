@@ -1,5 +1,6 @@
 import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.ColumnDescription;
 import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.CreateTableQuery;
+import net.sf.jsqlparser.schema.Column;
 
 import java.util.*;
 
@@ -23,9 +24,8 @@ public class Table {
             columnDataTypes.add(c.getColumnType());
 
         }
-        this.bTrees = new ArrayList<BTree>();
-        BTree btree = new BTree(this.primaryKeyColumn.getColumnName());
-        bTrees.add(btree);
+        this.bTrees = new ArrayList<>();//new btree container
+        addPrimaryKeyIndex();//indexes primary key
 
     }
 
@@ -44,6 +44,7 @@ public class Table {
             columnDataTypes.add(c.getColumnType());
         }
         this.colNameTypes = new ArrayList<ColNameType>();
+        this.bTrees = anotherTable.getBTrees();
     }
 
     public void setColNameTypes(ArrayList<ColNameType> arr){
@@ -87,16 +88,20 @@ public class Table {
 
         return list;
     }
-/**
-    public BTree getBTreeByName(String Name){
-        for(BTree b: bTrees){
-            if(tableName.compareToIgnoreCase(b.getName())==0);
-            return b;
+
+    public BTree getBTreeByName(String nameToGet){
+        for(BTree b: this.bTrees){
+            if(b.getName().compareToIgnoreCase(nameToGet)==0) {
+                return b;
+            }
         }
-        throw new IllegalArgumentException("Could not find the index you requested");
+        return null;
+    }
+    public ArrayList<BTree> getBTrees(){
+        return this.bTrees;
     }
 
-*/
+
 
    public int getColumnIndex(String columnName){
        int counter = 0;
@@ -124,22 +129,33 @@ public class Table {
 
 
     public void printTable(){
-       System.out.println("Table Name = " + this.tableName);
-       System.out.println();
-       System.out.println("Primary Key column = " + getPrimaryKeyColumn());
-       System.out.println(" ");
+        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("Table Name = " + this.tableName);
+        System.out.println("Primary Key column = " + this.primaryKeyColumn.getColumnName());
+        System.out.println(" ");
 
-      for(ColumnDescription c : this.columnNames) {
-          System.out.println(c.getColumnName());
+        System.out.println("-      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -");
+        for (ColumnDescription c : this.columnNames) {
+            System.out.printf("%-20s", c.getColumnName());
+        }
+        System.out.println();
+        System.out.println("-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -");
+        int i = 0;
+
+        for (Row row : this.theTable) {
+            for (Cell cell : row.getTheCells()) {
+                if (cell.getValue() != null) {
+                    System.out.printf("%-20s", cell.getValue().toString());
+                    continue;
+                }
+                System.out.printf("%-20s", "null");
+            }
+            System.out.println();
+        }
+        System.out.println("-----------------------------------------------------------------------------------------");
 
 
-              for (Cell cell : getColumn(c)) {
-
-                  System.out.println(cell.getValue().toString());
-                  System.out.println(cell.getValue().toString());
-              }
-          }
-      }
+    }
 
     /**
      * deep clones a table and return an array list of its values
@@ -245,6 +261,29 @@ public class Table {
             r.removeCell(index);
         }
         columnNames.remove(index);
+
+    }
+    public void addPrimaryKeyIndex(){
+       // int index = getColumnIndex(primaryKeyColumn.getColumnName());
+        ColumnDescription.DataType type = primaryKeyColumn.getColumnType();
+
+        switch(type){
+            case INT:
+                BTree<Integer, Row> btree = new BTree<Integer, Row>(primaryKeyColumn.getColumnName());
+                this.bTrees.add(btree);
+                break;
+            case BOOLEAN:
+                throw new IllegalArgumentException("Primary Key column cannot be a Boolean dataType");
+            case DECIMAL:
+                BTree<Double, Row> btree1 = new BTree<Double, Row>(primaryKeyColumn.getColumnName());
+                this.bTrees.add(btree1);
+                break;
+            case VARCHAR:
+                BTree<String, Row> btree2 = new BTree<String, Row>(primaryKeyColumn.getColumnName());
+                this.bTrees.add(btree2);
+                break;
+
+        }
 
     }
 

@@ -125,6 +125,21 @@ public class DataBaseTest {
     }
 
     /**
+     * for this method I print the tabe after all the ros are deleted to show that the rows have been deleted
+     * @throws JSQLParserException
+     */
+    @Test
+    public void deleteEntireTable() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        dataBase1.execute("DELETE FROM YCStudent");
+        assertTrue(dataBase1.getTableByName("YCStudent").getTable().size()==0);
+        dataBase1.getTableByName("YCStudent").printTable();
+
+
+    }
+
+    /**
      * test delete using where condition
      * @throws JSQLParserException
      */
@@ -325,6 +340,8 @@ public class DataBaseTest {
 
     /**
      * this method tests all the select functions
+     * I print the result sets of the select queries for easy understanding
+     * and then I do unit tests as well
      * @throws JSQLParserException
      */
     @Test
@@ -343,11 +360,25 @@ public class DataBaseTest {
         dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',3.4,800092345,'Freshman');");
         dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Jasen','Meltzer',3.5,800092349,'Freshman');");
         ResultSet rs = dataBase1.execute("SELECT COUNT(DISTINCT GPA) FROM YCSTUDENT;");
+        System.out.println("Query = " + "SELECT COUNT(DISTINCT GPA) FROM YCSTUDENT;");
+        rs.printResultSetSelect();
+
         ResultSet rs1 = dataBase1.execute("SELECT AVG(GPA) FROM YCSTUDENT;");
+        System.out.println("Query = " + "SELECT COUNT(DISTINCT GPA) FROM YCSTUDENT;");
+        rs1.printResultSetSelect();
+
         ResultSet rs2 = dataBase1.execute("SELECT SUM(GPA) FROM YCSTUDENT;");
-        ResultSet rs3 = dataBase1.execute("SELECT MAX(GPA) FROM YCSTUDENT;");
-        ResultSet rs4 = dataBase1.execute("SELECT MIN(GPA) FROM YCSTUDENT;");
+        System.out.println("Query = " + "SELECT SUM(GPA) FROM YCSTUDENT;");
         rs2.printResultSetSelect();
+
+        ResultSet rs3 = dataBase1.execute("SELECT MAX(GPA) FROM YCSTUDENT;");
+        System.out.println("Query = " + "SELECT MAX(GPA) FROM YCSTUDENT;");
+        rs3.printResultSetSelect();
+
+        ResultSet rs4 = dataBase1.execute("SELECT MIN(GPA) FROM YCSTUDENT;");
+        System.out.println("Query = " + "SELECT MIN(GPA) FROM YCSTUDENT;");
+        rs4.printResultSetSelect();
+
 
         for(Row r: rs.getTheTable().getTable()){
             assertTrue(r.getTheCells().get(rs.getTheTable().getColumnIndexForFunctions("COUNT(GPA)")).getValue().toString().equals("2"));
@@ -365,6 +396,34 @@ public class DataBaseTest {
             assertTrue(r.getTheCells().get(rs4.getTheTable().getColumnIndexForFunctions("MIN(GPA)")).getValue().toString().equals("3.4"));
         }
 
+
+    }
+
+    /**
+     * checks that a btree is created and that all the required values have been added
+     * @throws JSQLParserException
+     */
+    @Test
+    public void createIndexTest() throws JSQLParserException {
+        String query = "CREATE TABLE YCStudent"
+                + "("
+                + " BannerID int,"
+                + " Class varchar(255),"
+                + " FirstName varchar(255),"
+                + " LastName varchar(255) NOT NULL,"
+                + " GPA decimal(1,2) DEFAULT 0.00,"
+                + " PRIMARY KEY (BannerID)"
+                + ");";
+
+        dataBase1.execute(query);
+        dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',3.4,800092345,'Freshman');");
+        dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Jasen','Meltzer',3.5,800092349,'Freshman');");
+
+        dataBase1.execute("CREATE INDEX GPA_Index on YCStudent (GPA);");
+        assertTrue(dataBase1.getTableByName("YCStudent").getBTrees().size()==2);
+        ArrayList<BTree.Entry> entries = dataBase1.getTableByName("YCStudent").getBTreeByName("GPA").getOrderedEntries();
+        assertTrue(entries.get(0).getKey().equals(3.4));
+        assertTrue(entries.get(1).getKey().equals(3.5));
 
     }
 

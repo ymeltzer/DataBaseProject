@@ -1,6 +1,13 @@
 public class DBTest {
     public static void main(String[] args){
         try {
+            System.out.println("SQLDataBase written by Yudi Meltzer.");
+            System.out.println("This DataBase demo demonstrates numerous command options and their results");
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            System.out.println();
             DataBase dataBase = new DataBase();
             //Create table query
             String query = "CREATE TABLE YCStudent"
@@ -19,7 +26,7 @@ public class DBTest {
 
 
             System.out.println("Query = " + query);
-            resultSet.printResultSet();
+            resultSet.printResultSetSelect();//returns empty result set with column names
             dataBase.printDataBase();
 
             //insert query
@@ -124,6 +131,24 @@ public class DBTest {
             System.out.println("Query = " + "UPDATE YCStudent SET GPA=2.0,Class='Super Senior';");
             resultSet26.printResultSet();
             dataBase.printDataBase();
+
+            ResultSet resultSet27 = dataBase.execute("CREATE INDEX GPA_Index on YCStudent (GPA);");
+            System.out.println("Query = " + "CREATE INDEX LastName_Index on YCStudent (GPA);");
+            resultSet27.printResultSet();
+            System.out.println();
+            ResultSet resultSet28 = dataBase.execute("CREATE INDEX LastName_Index on YCStudent (LastName);");
+            System.out.println("Query = " + "CREATE INDEX LastName_Index on YCStudent (LastName);");
+            resultSet28.printResultSet();
+            System.out.println();
+            System.out.println("Table is now Indexed by :");
+            System.out.println("-   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
+            int counter = 0;
+            for(BTree b : dataBase.getTableByName("YCStudent").getBTrees()){
+                counter++;
+                System.out.println(counter+ ". " + b.getName());
+            }
+            System.out.println("-   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
+
 
 
 

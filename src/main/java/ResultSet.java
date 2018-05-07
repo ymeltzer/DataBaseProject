@@ -43,17 +43,18 @@ public class ResultSet {
         this.resultingRows.add(row);
     }
 
-    public ResultSet(Table table){//for SelectQuery
+    public ResultSet(Table table){//for SelectQuery and create table
         this.resultingRows = table.getTable();
         this.theTable = table;
-        if(table.getColNameTypes().size()==0){
+        if(table.getColNameTypes()==null|| table.getColNameTypes().size()==0){
             this.columnDescriptions = table.getColumnNames();
         }
-        if(table.getColNameTypes().size()!=0){
+        if(table.getColNameTypes()==null||table.getColNameTypes().size()!=0){
             this.columnDescriptionsWithAlteredNames = table.getColNameTypes();
         }
         this.wasQuerySuccessful= true;
     }
+
 
     public ArrayList<Row> getResultingRows(){
        return this.resultingRows;
@@ -88,9 +89,11 @@ public class ResultSet {
         System.out.println("ResultSet of your query returns = ");
         if(this.wasQuerySuccessful) {
             if(columnDescriptionsWithAlteredNames == null) {
-                for (ColumnDescription c : columnDescriptions) {
-                    System.out.printf("%-20s", c.getColumnName());
-                }
+
+                    for (ColumnDescription c : columnDescriptions) {
+                        System.out.printf("%-20s", c.getColumnName());
+                    }
+
             }
             if(columnDescriptionsWithAlteredNames!=null) {
                 for (ColNameType c : columnDescriptionsWithAlteredNames) {

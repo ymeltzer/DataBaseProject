@@ -222,9 +222,10 @@ public class Updater {
                             if(CompareValToColumnType(col.getValue(), c)){
                                 if(c.isUnique() || this.table.getPrimaryKeyColumn().getColumnName().compareToIgnoreCase(c.getColumnName())==0) {//if primary key column it must also be unique
                                     if (isValueUniqueInColumn(c, col.getValue())) {
-
+                                        removeRowFromTree(r);//removes old row value from tree
                                         r.getTheCells().get(this.table.getColumnIndex(c.getColumnName())).setValue(castValue(col.getValue(), c));
                                         bool=true;
+                                        addRowToTree(r);
                                         break;
 
                                     }
@@ -232,8 +233,10 @@ public class Updater {
                                         throw new IllegalArgumentException("This value = " + col.getValue()+ " occurs already in unique column");
                                     }
                                 }
+                                removeRowFromTree(r);//removes old row value from tree
                                 r.getTheCells().get(this.table.getColumnIndex(c.getColumnName())).setValue(castValue(col.getValue(), c));
                                 bool=true;
+                                addRowToTree(r);//removes old row value from tree
                                 break;
                             }
                         }
@@ -262,9 +265,10 @@ public class Updater {
                         if(CompareValToColumnType(col.getValue(), c)){
                             if(c.isUnique() || this.table.getPrimaryKeyColumn().getColumnName().compareToIgnoreCase(c.getColumnName())==0) {//if primary key column it must also be unique
                                 if (isValueUniqueInColumn(c, col.getValue())) {
-
+                                    removeRowFromTree(r);//removes old row value from tree
                                     r.getTheCells().get(this.table.getColumnIndex(c.getColumnName())).setValue(castValue(col.getValue(), c));
                                     bool=true;
+                                    addRowToTree(r);
                                     break;
 
                                 }
@@ -272,9 +276,12 @@ public class Updater {
                                     throw new IllegalArgumentException("This value = " + col.getValue()+ " occurs already in unique column");
                                 }
                             }
+                            removeRowFromTree(r);
                             r.getTheCells().get(this.table.getColumnIndex(c.getColumnName())).setValue(castValue(col.getValue(), c));
                             bool=true;
+                            addRowToTree(r);
                             break;
+
                         }
                     }
                 }
@@ -285,6 +292,51 @@ public class Updater {
             }
         }
         return true;
+    }
+    public void addRowToTree(Row r){
+        for(ColumnValuePair col : this.columnValuePairs) {
+            String columnName = col.getColumnID().getColumnName();
+
+            if ((this.table.getBTreeByName(columnName) != null) && (col.getValue()!=null)) {
+                Object key = castValue(col.getValue(), this.table.getColumnNames().get(this.table.getColumnIndex(columnName)));
+                this.table.getBTreeByName(columnName).put((Comparable)key , r);
+
+            }
+        }
+    }
+
+    /**
+     * this method casts a value to btree datatype and then sets the value of that key to null,
+     * @param r
+     */
+    public void removeRowFromTree(Row r){
+        for(int i = 0; i < r.getTheCells().size(); i++){
+
+            Cell c = r.getCell(i);
+            String columnName = table.getColumnNames().get(i).getColumnName();
+            ColumnDescription.DataType type = this.table.getDataTypeForIndex(this.table.getColumnIndex(columnName));
+
+            switch(type){
+                case VARCHAR:
+                    if(this.table.getBTreeByName(columnName)!=null) {
+                        this.table.getBTreeByName(columnName).delete((String)c.getValue(), r);
+                        break;
+
+                    }
+                case DECIMAL:
+                    if(this.table.getBTreeByName(columnName)!=null) {
+                        this.table.getBTreeByName(columnName).delete((Double)c.getValue(), r);
+                        break;
+                    }
+                case INT:
+                    if(this.table.getBTreeByName(columnName)!=null) {
+                        this.table.getBTreeByName(columnName).delete((Integer)c.getValue(), r);
+                        break;
+
+                    }
+            }
+        }
+
     }
 }
 

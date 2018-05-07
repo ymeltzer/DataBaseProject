@@ -30,7 +30,15 @@ public class Cell implements Comparable<Object>{
      */
     @Override
     public int compareTo(Object o){
-try {
+    if(value==null && o==null){
+        return 0;
+    }
+        if(value!=null && o==null){
+            return 1;
+        }
+        if(value==null && o!=null){
+            return -1;
+        }
     if (value instanceof String) {
         String thisValue = (String) value;
         String anotherValue = (String) o;
@@ -40,8 +48,8 @@ try {
     } else if (value instanceof Boolean) {
         String thisValue = String.valueOf(value);
         String anotherValue = String.valueOf(o);
-
         return (thisValue.toUpperCase().compareTo(anotherValue.toUpperCase()));
+
     } else if (value instanceof Double) {
         Double thisValue = (Double) value;
         Double anotherValue = (Double) o;
@@ -67,10 +75,8 @@ try {
 
 
     }
-}
-catch(NullPointerException e){
 
-}
+
 
         throw new IllegalArgumentException("you have inserted a non compatible type to compare- " + this.value.toString() +" or " + o.toString());
 

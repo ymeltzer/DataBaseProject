@@ -93,8 +93,8 @@ public class Inserter{
                 throw new IllegalArgumentException(c.getColumnID().getColumnName()+ " is not a column in table" + this.table.getTableName());
             }
         }
-
-
+        //add the value to an existing btree
+        addValueToTree(row);
         return row;
 
     }
@@ -223,6 +223,23 @@ public class Inserter{
       }
       return arr;
     }
+
+    /**
+     * if a btree exists for a value's column we add the value to the tree
+     * @param r
+     */
+    public void addValueToTree(Row r){
+       for(ColumnValuePair col : colValArrayList) {
+           String columnName = col.getColumnID().getColumnName();
+
+           if ((this.table.getBTreeByName(columnName) != null) && (col.getValue()!=null)) {
+               Object key = castValue(col.getValue(), this.table.getColumnNames().get(this.table.getColumnIndex(columnName)));
+               this.table.getBTreeByName(columnName).put((Comparable)key , r);
+
+           }
+       }
+    }
+
 
 
 

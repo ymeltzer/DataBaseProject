@@ -7,6 +7,7 @@ import net.sf.jsqlparser.schema.Database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Selecter{
@@ -40,7 +41,8 @@ public class Selecter{
     public Table doSelect(){
 
        if(whereCondition!=null) {//is there a where condition?
-           runConditionsOnTable();
+               runConditionsOnTable();
+
        }
 
        if(selectedColumnNames.length == 1){// which column should we act on?
@@ -121,18 +123,29 @@ public class Selecter{
      * @return
      */
      public void runConditionsOnTable(){
+        boolean indexed = allColumnsAreIndexed();//are all column indexed
 
-        for(int i = 0; i< this.table.getTable().size(); i++){
-
-            Row r = new WhereCondition(this.whereCondition, this.table, this.table.getTable().get(i)).implementCondition(this.table.getTable().get(i), this.whereCondition);
-            if(r==null){
-                this.table.getTable().remove(this.table.getTable().get(i));//remove non matching row
-                i--;
+        for(int i = 0; i< this.table.getTable().size(); i++) {
+            if (indexed) {
+                HashSet<Row> meetsCondition = new WhereCondition(this.whereCondition, this.table, this.table.getTable().get(i)).implementIndexedCondition(new HashSet<Row>(), this.whereCondition);
+                if (!meetsCondition.isEmpty()) {
+                    if(!meetsCondition.contains(this.table.getTable().get(i))) {//does this row meet condition
+                        this.table.getTable().remove(this.table.getTable().get(i));//remove non matching row
+                        i--;
+                    }
+                }
+            }
+            else {
+                Row r = new WhereCondition(this.whereCondition, this.table, this.table.getTable().get(i)).implementCondition(this.table.getTable().get(i), this.whereCondition);
+                if (r == null) {
+                    this.table.getTable().remove(this.table.getTable().get(i));//remove non matching row
+                    i--;
+                }
             }
         }
-        if(this.table.getTable().size()==0){
-            throw new IllegalArgumentException("'Where Condition' doesn't match any rows in this table");
-        }
+       // if(this.table.getTable().size()==0){
+        //    throw new IllegalArgumentException("'Where Condition' doesn't match any rows in this table");
+       // }
     }
 
     /**
@@ -487,6 +500,31 @@ public class Selecter{
         }
         throw new IllegalArgumentException(columnName +" does not exist in this table");
     }
+
+    /**
+     * iterates though slected column names and btrees checking that all columns are indexed
+     * @return
+     */
+    public boolean allColumnsAreIndexed(){
+
+        for(ColumnID col: selectedColumnNamesList) {
+            boolean bool = false;
+            if(this.table.getBTrees().isEmpty()){
+                throw new IllegalArgumentException("PrimaryKey was not indexed");
+            }
+            for (BTree tree : this.table.getBTrees()) {
+                if(col.getColumnName().compareToIgnoreCase(tree.getName())==0){
+                    bool=true;
+                    break;
+                }
+            }
+            if(!bool){
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 
