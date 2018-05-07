@@ -287,59 +287,66 @@ public class BTree<Key extends Comparable<Key>, Value>
         }
     }
 
-    public ArrayList<Row> getNotEquals(Key key)
+    /**
+     * returns all values not equals to the key
+     * @param key
+     * @return
+     */
+
+    public HashSet<Row> getNotEquals(Key key)
     {
+        HashSet rows= new HashSet<Row>();
         if (key == null)
         {
             throw new IllegalArgumentException("argument to get() is null");
         }
-        Entry entry = this.get(this.root, key, this.height);
-        if(entry != null)
-        {
-            return entry.val;
+
+        ArrayList<Entry> entries = getOrderedEntries();
+        for(Entry e : entries){
+            if(!isEqual(key, e.key)){
+                rows.addAll(e.val);
+            }
         }
-        return null;
+        return rows;
     }
 
-    private Entry getNotEquals(Node currentNode, Key key, int height)
+    /**
+     * getting all keys less than or equal to given key
+     * @param key
+     * @return
+     */
+    public HashSet<Row> getLessThanEquals(Key key)
     {
-
-        Entry[] entries = currentNode.entries;
-
-        //current node is external (i.e. height == 0)
-        if (height == 0)
+        HashSet rows= new HashSet<Row>();
+        if (key == null)
         {
-            for (int j = 0; j < currentNode.entryCount; j++)
-            {
-                if(!isEqual(key, entries[j].key))
-                {
-                    //found desired key. Return its value
-                    return entries[j];
-                }
-            }
-            //didn't find the key
-            return null;
+            throw new IllegalArgumentException("argument to get() is null");
         }
 
-        //current node is internal (height > 0)
-        else
-        {
-            for (int j = 0; j < currentNode.entryCount; j++)
-            {
-                //if (we are at the last key in this node OR the key we
-                //are looking for is less than the next key, i.e. the
-                //desired key must be in the subtree below the current entry),
-                //then recurse into the current entry’s child
-                if (j + 1 == currentNode.entryCount || less(key ,entries[j + 1].key))
-                {
-                    return this.get(entries[j].child, key, height - 1);
-                }
+        ArrayList<Entry> entries = getOrderedEntries();
+        for(Entry e : entries){
+            if(isEqual(key, e.key)||greater(key,e.key)){
+                rows.addAll(e.val);
             }
-            //didn't find the key
-            return null;
         }
+        return rows;
     }
+    public HashSet<Row> getGreaterThanEquals(Key key)
+    {
+        HashSet rows= new HashSet<Row>();
+        if (key == null)
+        {
+            throw new IllegalArgumentException("argument to get() is null");
+        }
 
+        ArrayList<Entry> entries = getOrderedEntries();
+        for(Entry e : entries){
+            if(isEqual(key, e.key)||less(key,e.key)){
+                rows.addAll(e.val);
+            }
+        }
+        return rows;
+    }
     /**
      * I first get the ordered btree and then check for keys greater than our key
      * @param key
@@ -352,14 +359,7 @@ public class BTree<Key extends Comparable<Key>, Value>
         {
             throw new IllegalArgumentException("argument to get() is null");
         }
-        /*
-        rows = this.getGreaterThan(this.root, key, this.height, rows);
-        if(rows != null)
-        {
-            return rows;
-        }
-        return null;
-        */
+
         ArrayList<Entry> entries = getOrderedEntries();
         for(Entry e : entries){
             if(less(key, e.key)){
@@ -694,8 +694,8 @@ public class BTree<Key extends Comparable<Key>, Value>
         dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Dent',1.0,800012945);");
         dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Dad','Sir',1.3,800012245);");
         dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Fraydy','Caroline',2.9,80002222);");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Katz',2.3,80001111);");
-        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Dad','Diament',2.2,800012098);");
+        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Katz',3.5,80001111);");
+        dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Dad','Diament',3.5,800012098);");
         dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Fraydy','leff',2.1,800000000);");
         dataBase.execute("CREATE INDEX LastName_Index on YCStudent (GPA);");
        // int index = dataBase.getTableByName("YCStudent").getColumnIndex("LastName");
@@ -722,10 +722,10 @@ public class BTree<Key extends Comparable<Key>, Value>
         System.out.println();
 
 
-       ResultSet rs = dataBase.execute("Select * FROM YCStudent WHERE GPA=3.0;");
-       rs.printResultSetSelect();
+       ResultSet rs = dataBase.execute("Select * FROM YCStudent WHERE GPA=3.5;");
+      rs.printResultSetSelect();
        System.out.println();
-        dataBase.printDataBase();
+      //  dataBase.printDataBase();
       //  st.delete("'caroline'",dataBase.getTableByName("YCStudent").getTable().get(6));
         System.out.println("Key-value pairs, sorted by key:");
        ArrayList<Entry> entries1 = st.getOrderedEntries();

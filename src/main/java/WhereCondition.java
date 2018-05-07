@@ -230,8 +230,8 @@ public class WhereCondition{
 
                 index = table.getColumnIndex(id.getColumnName());
                 rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
-                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getLessThan((Comparable) rightOperand));
-                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).get((Comparable) rightOperand));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getLessThanEquals((Comparable) rightOperand));
+
 
                     return meetsCondition;
 
@@ -258,8 +258,8 @@ public class WhereCondition{
 
                 index = table.getColumnIndex(id.getColumnName());
                 rightOperand = castCellsVal((String) c.getRightOperand(), table.getColumnNames().get(index));
-                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getGreaterThan(((Comparable) rightOperand)));
-                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).get((Comparable) rightOperand));
+                meetsCondition.addAll(this.table.getBTreeByName(id.getColumnName()).getGreaterThanEquals(((Comparable) rightOperand)));
+
 
                 return meetsCondition;
         }
