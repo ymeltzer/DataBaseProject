@@ -10,9 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
+ * This is an SQL DATABASE
+ * Note* any method left longer than 30 lines was done so to increase readability and I have made notes where I have done so(it is usually for a switch statement)
  * DataBase class
  * class that takes original string query and uses parser to figure
   the command and what to do with it
+
  */
 public class DataBase{
 
@@ -40,6 +43,7 @@ public class DataBase{
         result = (SelectQuery)parser.parse("SELECT AVG(GPA) FROM STUDENTS;");
         //result = (SelectQuery)parser.parse("SELECT COUNT(DISTINCT GPA) FROM STUDENTS;");
 */
+/**
 
         DataBase dataBase = new DataBase();
         String query = "CREATE TABLE YCStudent"
@@ -54,23 +58,23 @@ public class DataBase{
                 + " PRIMARY KEY (BannerID)"
                 + ");";
         dataBase.execute(query);
-      dataBase.printDataBase();
+     // dataBase.printDataBase();
 
         ResultSet resultSet1= dataBase.execute("INSERT INTO ycstudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',3.0,800092345,'Freshman');");
         ResultSet resultSet2= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yosef','Epstein',3.42,800002345,'Freshman');");
-        ResultSet resultSet3= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Yudi','Meltzer',3.0,800012745);");
+        ResultSet resultSet3= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Yudi','Sturm',3.0,800012745);");
         ResultSet resultSet4= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Gav','Sturm',3.5,800012845);");
-        ResultSet resultSet5= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Meltzer',3.0,800012945);");
+        ResultSet resultSet5= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Leah','Jacobs',3.0,800012945);");
         ResultSet resultSet6= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Dad','Meltzer',3.0,800012245);");
         ResultSet resultSet7= dataBase.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Fraydy','Meltzer',3.4,800012249);");
         dataBase.printDataBase();
-        ResultSet resultSet12 = dataBase.execute("UPDATE YCStudent SET GPA=3.0,Class='Super Senior' WHERE BannerID=800012245;");
-        dataBase.printDataBase();
 
-//        ResultSet resultSet13 = dataBase.execute("CREATE INDEX SSNum_Index on YCStudent (SSNum);");
-  //      dataBase.printDataBase();
-   //     resultSet13.printResultSet();
 
+
+       ResultSet resultSet13 = dataBase.execute("SELECT * FROM YCStudent ORDER BY GPA DESC, LastName ASC;");
+  //     dataBase.printDataBase();
+       resultSet13.printResultSetSelect();
+*/
 /**
         SQLParser parser = new SQLParser();
         String s = "CREATE INDEX SSNum_Index on YCStudent (SSNum);";
@@ -96,12 +100,13 @@ public class DataBase{
      * @return
      * @throws JSQLParserException
      * executes Sql command
+     * I have left this method larger then 30 lines because to break up the code would make it more confusing for the reader
+     *
      *
      */
     public ResultSet execute(String query) throws JSQLParserException {//takes object and deciphers the type of command object it is
         SQLQuery sqlQuery = parseQuery(query);
        try {
-
             if (sqlQuery instanceof CreateTableQuery) {
                 CreateTableQuery createTableQuery = (CreateTableQuery) sqlQuery;
                 this.dataBase.add(new Table(createTableQuery));
@@ -110,13 +115,11 @@ public class DataBase{
        }
             catch(Exception exception){
            return new ResultSet(false, exception);
-
          }
 
         if(sqlQuery instanceof InsertQuery){
             try {
                 InsertQuery insertQuery = (InsertQuery) sqlQuery;
-
                 Inserter inserter = new Inserter(insertQuery, getTableByName(insertQuery.getTableName()));
                 Row row = inserter.insertRow();
                 getTableByName(insertQuery.getTableName()).addRow(row);
@@ -125,61 +128,45 @@ public class DataBase{
             catch(Exception exception){
                 return new ResultSet(false, exception);
             }
-
         }
 
         if(sqlQuery instanceof DeleteQuery){
                try {
                     DeleteQuery deleteQuery = (DeleteQuery) sqlQuery;
-
                     Deleter deleter = new Deleter(deleteQuery, getTableByName(deleteQuery.getTableName()), this);
                     deleter.deleteRow();
                     return new ResultSet(true);
                }
                 catch(Exception exception){
-
                    return new ResultSet(false, exception);
                 }
-
-
         }
+
         if(sqlQuery instanceof SelectQuery){
               try {
                     SelectQuery selectQuery = (SelectQuery) sqlQuery;
                     Table table = new Table(getTableByName(selectQuery.getFromTableNames()[0]));
-
                     table = new Selecter(selectQuery, table).doSelect();
                     return new ResultSet(table);
                }
                 catch(Exception exception) {
                 return new ResultSet(false, exception);
             }
-
-
         }
 
         if(sqlQuery instanceof CreateIndexQuery){
             try {
-
                 CreateIndexQuery createIndexQuery = (CreateIndexQuery) sqlQuery;
                 Table table = getTableByName(createIndexQuery.getTableName());
                 int index = table.getColumnIndex(createIndexQuery.getColumnName());
                 Indexer indexer = new Indexer(table, createIndexQuery);
-
                 table.getBTrees().add(indexer.doIndex());
-
                 return new ResultSet(true);
                 }
-
                 catch(Exception exception){
                 return new ResultSet(false, exception);
-
                 }
-
-
-
         }
-
 
         if(sqlQuery instanceof UpdateQuery) {
             try {
@@ -191,16 +178,11 @@ public class DataBase{
                 return new ResultSet(false, exception);
             }
         }
-
         return new ResultSet(false);
-
     }
-
     public ArrayList<Table> getDataBase() {
         return dataBase;
     }
-
-
 
 
 
@@ -221,87 +203,8 @@ public class DataBase{
         throw new IllegalArgumentException("Table " + tableName + " Doesn't Exist");
     }
 
-
-
-
-
     /**
-     * deletes entire table if there is no where condition
-     * deltes specified rows if there is a where condition
-     * @param deleteQuery
-     */
-    /**
-    private void doDeleteQuery(DeleteQuery deleteQuery){
-
-       Table theTable = getTableByName(deleteQuery.getTableName());
-        if(deleteQuery.getWhereCondition()==null){
-            this.dataBase.remove(dataBase.indexOf(getTableByName(deleteQuery.getTableName())));
-        }
-        if(deleteQuery.getWhereCondition()!=null){
-
-            WhereCondition whereCondition = new WhereCondition(deleteQuery.getWhereCondition(), theTable);
-            ArrayList<Row> arrayList = whereCondition.checkCondition();
-            for(Row r : arrayList){
-                for(Row row : getTableByName(deleteQuery.getTableName()).getTable()){
-
-                    if(row.equals(r)){
-                        getTableByName(deleteQuery.getTableName()).getTable().remove(row);
-                    }
-                }
-            }
-
-
-
-        }
-
-    }
- private void removeRow(Table table, Row r){
-        int counter =0;
-        for(Row row : table.getTable()){
-            boolean bool = true;
-
-            // stuck on comparing cells
-            for(Cell c : row.getTheCells()){
-                int index = row.getCellIndex(c);//get of cell from first row
-
-                Cell cell2 =r.getTheCells().get(counter);//get second cell using
-               if(c.compareTo(cell2)!=0 ){
-                   continue;
-               }
-
-                counter++;
-            }
-
-        }
-
-    }
-     */
-    /**
-    V castCell(String cellVal, ColumnDescription columnDescription){
-
-        Object returnVal = null;
-
-        switch(columnDescription.getColumnType()){
-
-            case VARCHAR:
-                returnVal = cellVal;
-                break;
-            case DECIMAL:
-                returnVal = Float.parseFloat(cellVal);
-                break;
-            case BOOLEAN:
-                if(cellVal.equals("true")){
-                    returnVal = true;
-                }
-                if(cellVal.equals("false")){
-                    returnVal = false;
-                }
-                break;
-            case INT:
-                returnVal = Integer.parseInt(cellVal);
-        }
-        return (V) cellVal;
-    }
+     * This is a really nice print method I wrote to print out the tables in the database
      */
     public void printDataBase(){
         for(Table table: this.dataBase) {

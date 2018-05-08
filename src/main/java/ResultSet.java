@@ -22,7 +22,7 @@ public class ResultSet {
             row.add(new Cell(true));
             resultingRows.add(row);
         }
-        if(!bool){//in case the query didnt work for some reason I return false and return the error message
+        if(!bool){//in case the query didn't work for some reason I return false and return the error message
             row.add(new Cell(false));
         }
         resultingRows.add(row);
@@ -35,7 +35,7 @@ public class ResultSet {
             row.add(new Cell(true));
             this.resultingRows.add(row);
         }
-        if(!bool){//in case the query didnt work for some reason I return false and return the error message
+        if(!bool){//in case the query didn't work for some reason I return false and return the error message
             row.add(new Cell(false));
             row.add(new Cell(e.getMessage()));
             this.exceptionMessage = e.getMessage();
@@ -69,9 +69,7 @@ public class ResultSet {
         return this.wasQuerySuccessful;
     }
 
-    /**
-     * I still need to remove quotes for varchar
-     */
+
 
     public void printResultSet(){
         System.out.println("ResultSet of your query returns = ");

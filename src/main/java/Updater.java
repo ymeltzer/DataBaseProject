@@ -131,33 +131,26 @@ public class Updater {
             case BOOLEAN:
                 object = toBeParsed.toLowerCase();
                 if (object.equals("true")) {
-
                     return true;
                 }
                 if (object.equals("false")) {
-
                     return false;
                 } else
                     throw new IllegalArgumentException("Cell with value" + toBeParsed + " does not contain a proper value");
 
             case DECIMAL:
-
                 int x = toBeParsed.length();
                 int indexOfDot = toBeParsed.indexOf(".");
 
                 String untilDot = toBeParsed.substring(0, indexOfDot);
 
                 String afterDot = toBeParsed.substring(indexOfDot+1, x);
-
                 if (c.getWholeNumberLength() > 0 && ( (untilDot.length()) > (c.getWholeNumberLength()))) {
                     throw new IllegalArgumentException(toBeParsed + " is bad value. Before decimal val should be length="+c.getWholeNumberLength()+"!="+untilDot.length());
                 }
                 if (c.getFractionLength() > 0 && ( (afterDot.length()) > (c.getFractionLength()))) {
-
                     toBeParsed = toBeParsed.substring(0,indexOfDot+c.getFractionLength()+1);
-
                 }
-
                 return  Double.parseDouble(toBeParsed);
 
             case VARCHAR:
@@ -165,7 +158,6 @@ public class Updater {
                 if(c.getVarCharLength() > 0 && toBeParsed.length() > c.getVarCharLength()){
                     throw new IllegalArgumentException("The varchar you are inserting is longer then its Constraint");
                 }
-
                 return toBeParsed;
         }
         throw new IllegalArgumentException("the string passed in isn't a proper datatype");
@@ -227,7 +219,6 @@ public class Updater {
                                         bool=true;
                                         addRowToTree(r);
                                         break;
-
                                     }
                                     if(!isValueUniqueInColumn(c,col.getValue())){
                                         throw new IllegalArgumentException("This value = " + col.getValue()+ " occurs already in unique column");

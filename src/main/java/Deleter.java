@@ -19,6 +19,9 @@ public class Deleter {
         this.deleteQuery = deleteQuery;
     }
 
+    /**
+     * this method drives the deleting of a row. it checks relavent conditions first and then delets rows
+     */
 
     public void deleteRow() {
 
@@ -26,6 +29,7 @@ public class Deleter {
 
             for (int i = 0; i < this.dataBase.getTableByName(table.getTableName()).getTable().size(); i++) {
                 //remove relevant row keys from tree
+
                 removeRowFromTree(this.table.getTable().get(i));
                 this.dataBase.getTableByName(table.getTableName()).getTable().remove(i);
                 i--;
@@ -36,7 +40,7 @@ public class Deleter {
             for (int i = 0; i < this.dataBase.getTableByName(table.getTableName()).getTable().size(); i++) {
 
                 WhereCondition whereCondition = new WhereCondition(this.deleteQuery.getWhereCondition(), this.table, this.dataBase.getTableByName(table.getTableName()).getTable().get(i));
-               //try {
+
                     Row row = whereCondition.implementCondition(this.dataBase.getTableByName(table.getTableName()).getTable().get(i), this.condition);
 
                     if (row != null) {
@@ -47,9 +51,7 @@ public class Deleter {
                         i--;
                         bool = true;
                     }
-                //}
-                //catch(NullPointerException e){
-              //}
+
             }
             if (!bool) {
                 throw new IllegalArgumentException("The Where clause you entered: " + this.condition.toString() + ", does not match any rows in table: " + this.table.getTableName());
@@ -60,6 +62,7 @@ public class Deleter {
     /**
      * method which calls on btree delete
      * we effectively remove a row from the container of values held by the key
+     * we do this in all the trees that contain this row
      * @param r
      */
     public void removeRowFromTree(Row r){

@@ -82,21 +82,27 @@ public class Inserter{
             }
 
         }
+        wasEveryColumnValuePairUsed();
+        //add the value to an existing btree
+        addValueToTree(row);
+        return row;
+
+    }
+    /**
+     * checks if every column value pair has a matching column in the table
+     */
+    private void wasEveryColumnValuePairUsed(){
         for(ColumnValuePair c: colValArrayList){//I am checking if any column value pair was not inserted therby implying bad input due to misspelled column name or such
-           boolean wasEveryColumnValPairUsed= false;
+            boolean wasEveryColumnValPairUsed= false;
             for(ColumnDescription col: table.getColumnNames()){
                 if(c.getColumnID().getColumnName().compareToIgnoreCase(col.getColumnName())==0){
-                   wasEveryColumnValPairUsed =true;
+                    wasEveryColumnValPairUsed =true;
                 }
             }
             if(!wasEveryColumnValPairUsed){
                 throw new IllegalArgumentException(c.getColumnID().getColumnName()+ " is not a column in table" + this.table.getTableName());
             }
         }
-        //add the value to an existing btree
-        addValueToTree(row);
-        return row;
-
     }
 
     private boolean CompareValToColumnType(String s, ColumnDescription c) {
@@ -142,8 +148,6 @@ public class Inserter{
      */
 
     private Object castValue(String toBeParsed, ColumnDescription c){
-
-
 
        switch(c.getColumnType()){
            case INT:

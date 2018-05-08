@@ -36,19 +36,20 @@ public class Selecter{
 
     /**
      * this method is the driver method to call on a selector to have it run the select query
+     * (There are exactly 30 lines of actual code)
      * @return
      */
     public Table doSelect(){
 
        if(whereCondition!=null) {//is there a where condition?
                runConditionsOnTable();
-
        }
-
        if(selectedColumnNames.length == 1){// which column should we act on?
 
            if(selectedColumnNames[0].getColumnName().equals("*")){//act on the whole table if there's a "*"
-
+               if(this.orderBys.length != 0){
+                   this.table = new OrderBy(this.selectQuery, this.table).runOrderby();
+               }
                if(functionInstanceArrayList.size()!=0){ //checks the functions we must apply to columns
                   this.table = doFunctions(this.table);
 
@@ -62,26 +63,24 @@ public class Selecter{
 
                    }
                }
-
-
            }
-
            if(!selectedColumnNames[0].getColumnName().equals("*")){//act on specified columns and remove irrelevant columns and column descriptions
                     this.table = removeColumns(this.table, selectedColumnNamesList);//removes
                     if(isDistinct){
                         this.table = getDistinctRows(this.table);
                     }
+                     if(this.orderBys.length != 0){
+                         this.table = new OrderBy(this.selectQuery, this.table).runOrderby();
+                     }
                     if(functionInstanceArrayList.size()!=0){
                         this.table = doFunctions(this.table);
                         if(isDistinct){
-                            this.table =getDistinctRows(this.table);
+                            this.table = getDistinctRows(this.table);
                         }
                     }
-
                 }
-
        }
-       if(selectedColumnNames.length > 1){//if we are given columns
+       if(selectedColumnNames.length > 1){//if we are asked to return specific columns
            this.table = removeColumns(this.table, selectedColumnNamesList);
            if(isDistinct){
                this.table = getDistinctRows(this.table);
@@ -90,18 +89,13 @@ public class Selecter{
            if(this.orderBys.length != 0){
                this.table = new OrderBy(this.selectQuery, this.table).runOrderby();
            }
-           if(functionInstanceArrayList.size()!=0){
+           if(functionInstanceArrayList.size()!=0){//there are no functions to be performed
                this.table = doFunctions(this.table);
                if(isDistinct){
-                   this.table =getDistinctRows(this.table);
+                   this.table = getDistinctRows(this.table);
                }
            }
        }
-
-
-
-
-
         return this.table;
     }
 
@@ -155,8 +149,6 @@ public class Selecter{
      */
     public Table removeColumns(Table table, ArrayList<ColumnID> namesList){
 
-
-
         for(int i = 0; i < table.getColumnNames().size(); i++) {//goes through our selected table
             boolean bool = false;
             for(ColumnID columnID: namesList) {//relevant columns
@@ -193,6 +185,7 @@ public class Selecter{
      * this method takes a table and applies the functions to the specified columns
      * it also changes the columns name appropriately ie from 'GPA" to AVG(GPA)
      * it also checks if we are doing a Function(Distinct column)
+     * (this method was left longer than 30 lines for readability)
      * @param table
      * @return
      */
@@ -206,7 +199,6 @@ public class Selecter{
                 if(f.isDistinct){
                     table = getDistinctRows(table);
                 }
-
                 switch (f.function) {
                     case AVG:
                         Double average = getAverage(c, table);
@@ -237,18 +229,12 @@ public class Selecter{
                         bool=true;
                         continue;
                 }
-
             }
-
-
-
         }
           if(!bool) {
               throw new IllegalArgumentException("The function(" + f.function.toString() + ") you supplied is Not Supported");
           }
-
       }
-
         return table;
   }
 

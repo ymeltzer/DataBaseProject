@@ -1,7 +1,6 @@
 import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.ColumnDescription;
 import edu.yu.cs.dataStructures.fall2016.SimpleSQLParser.SelectQuery;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,10 +26,10 @@ public class OrderBy {
                 if(mainOrderBY.getColumnID().getColumnName().compareToIgnoreCase(masterColumn.getColumnName())==0){
 
                     if(mainOrderBY.isAscending()){
-                       this.table = orderByFirstTime(this.table, this.table.getColumnIndex(masterColumn.getColumnName()));
+                       this.table = orderByFirstTimeAscending(this.table, this.table.getColumnIndex(masterColumn.getColumnName()));
                     }
                     if(mainOrderBY.isDescending()){
-                        this.table = orderByFirsTimeDescending(this.table, this.table.getColumnIndex(masterColumn.getColumnName()));
+                        this.table = orderByFirstTimeDescending(this.table, this.table.getColumnIndex(masterColumn.getColumnName()));
                     }
 
                 }
@@ -40,7 +39,13 @@ public class OrderBy {
         return this.table;
     }
 
-    private Table orderByFirstTime(Table t, int indexToOrder){
+    /**
+     * Orders first row then orders the rest of the row recursively
+     * @param t
+     * @param indexToOrder
+     * @return
+     */
+    private Table orderByFirstTimeAscending(Table t, int indexToOrder){
 
         for(int i = 0; i < table.getTable().size()-1; i++){
             for(int j = i + 1; j < table.getTable().size(); j++){
@@ -66,7 +71,7 @@ public class OrderBy {
 
         return t;
     }
-    private Table orderByFirsTimeDescending(Table t, int indexToOrder){
+    private Table orderByFirstTimeDescending(Table t, int indexToOrder){
 
         for(int i = 0; i < table.getTable().size(); i++){
             for(int j = i + 1; j < table.getTable().size(); j++){
