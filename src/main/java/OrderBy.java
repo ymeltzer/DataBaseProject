@@ -17,13 +17,20 @@ public class OrderBy {
             this.orderBysList = new ArrayList<SelectQuery.OrderBy>(Arrays.asList(selectQuery.getOrderBys()));
     }
 
+    /**
+     * this methods orders columns in proper order and if there are matching column values and there are orderbys on other columns,
+     * it will order the rows with matching values by the last column that needs to be ordered
+     * @return
+     */
     public Table runOrderby(){
 
         SelectQuery.OrderBy mainOrderBY = orderBysList.get(0);
-
+            checkAllOrderByColumnsExist();
             for(ColumnDescription masterColumn : this.table.getColumnNames()){
 
+
                 if(mainOrderBY.getColumnID().getColumnName().compareToIgnoreCase(masterColumn.getColumnName())==0){
+
 
                     if(mainOrderBY.isAscending()){
                        this.table = orderByFirstTimeAscending(this.table, this.table.getColumnIndex(masterColumn.getColumnName()));
@@ -36,11 +43,26 @@ public class OrderBy {
 
             }
 
+
         return this.table;
     }
 
+    private void checkAllOrderByColumnsExist() {
+        for(SelectQuery.OrderBy o: orderBysList){
+            boolean bool =false;
+            for (ColumnDescription c: table.getColumnNames()){
+                if(c.getColumnName().equals(o.getColumnID().getColumnName())){
+                    bool = true;
+                }
+            }
+            if(bool == false){
+                throw new IllegalArgumentException("OrderBy Column (" + o.getColumnID().getColumnName()+ ") is not a column in " + table.getTableName());
+            }
+        }
+    }
+
     /**
-     * Orders first row then orders the rest of the row recursively
+     * Orders first Column then orders any matching column values recursively by the next column with an orderby call
      * @param t
      * @param indexToOrder
      * @return
@@ -71,6 +93,13 @@ public class OrderBy {
 
         return t;
     }
+
+    /**
+     * orders the first column in descending order
+     * @param t
+     * @param indexToOrder
+     * @return
+     */
     private Table orderByFirstTimeDescending(Table t, int indexToOrder){
 
         for(int i = 0; i < table.getTable().size(); i++){
@@ -97,6 +126,14 @@ public class OrderBy {
 
         return t;
     }
+
+    /**
+     * the takes two rows with the matching First column value, and finds the first orderby column in which they dont match, then orders the rows accordingly
+     * @param row1Index
+     * @param row2Index
+     * @param orderByIndex
+     * @return
+     */
     private Table recursiveOrderBY(int row1Index, int row2Index, int orderByIndex){
         int columnIndex = 0;
         if(this.orderBysList.size()!=orderByIndex){
@@ -109,25 +146,25 @@ public class OrderBy {
             if (orderBysList.get(orderByIndex).isAscending()) {
 
                 if (this.table.getTable().get(row1Index).getTheCells().get(columnIndex).compareTo(this.table.getTable().get(row2Index).getTheCells().get(columnIndex).getValue()) > 0) {
-                    swapOrder(row1Index, row2Index);
+                    swapOrder(row1Index, row2Index);//swap order to get sorted rows
                 }
 
 
                 if (this.table.getTable().get(row1Index).getTheCells().get(columnIndex).compareTo(this.table.getTable().get(row2Index).getTheCells().get(columnIndex).getValue()) == 0) {
 
-                    this.table = recursiveOrderBY(row1Index, row2Index, orderByIndex + 1);
+                    this.table = recursiveOrderBY(row1Index, row2Index, orderByIndex + 1);//call recursion if the values are the same
                 }
 
             }
             if (orderBysList.get(orderByIndex).isDescending()) {
 
                 if (this.table.getTable().get(row1Index).getTheCells().get(columnIndex).compareTo(this.table.getTable().get(row2Index).getTheCells().get(columnIndex).getValue()) < 0) {
-                    swapOrder(row1Index, row2Index);
+                    swapOrder(row1Index, row2Index);//swap order to get sorted rows
                 }
 
 
                 if (this.table.getTable().get(row1Index).getTheCells().get(columnIndex).compareTo(this.table.getTable().get(row2Index).getTheCells().get(columnIndex).getValue()) == 0) {
-                    this.table = recursiveOrderBY(row1Index, row2Index, orderByIndex + 1);
+                    this.table = recursiveOrderBY(row1Index, row2Index, orderByIndex + 1);//call recursion if the values are the same
                 }
 
             }
@@ -136,6 +173,13 @@ public class OrderBy {
 
 
     }
+
+    /**
+     * swaps the order of two rows in a table
+     * @param row1Index
+     * @param row2Index
+     * @return
+     */
     private Table swapOrder(int row1Index, int row2Index){
         Row r1 = this.table.getTable().get(row1Index);
         Row r2 = this.table.getTable().get(row2Index);
@@ -159,14 +203,4 @@ public class OrderBy {
 
 
 
-    private int getOrderByListIndex(SelectQuery.OrderBy orderBy){
-        int index =0;
-        for(SelectQuery.OrderBy s : orderBysList){
-            if(s.getColumnID().getColumnName().equals(orderBy.getColumnID().getColumnName())){
-                return index;
-            }
-            index++;
-        }
-        return -1;
-    }
 }

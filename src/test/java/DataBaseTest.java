@@ -543,5 +543,86 @@ public class DataBaseTest {
 
     }
 
+    /**
+     * This test goes through some possible fail scenarios for UPDATE queries
+     *
+     *
+     */
+    @Test
+    public void failedUpdateTest() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        ResultSet rs = dataBase1.execute("UPDATE Teachers SET GPA=3.6,Class='Freshman' WHERE BannerID=800092345;");
+        //attempt an update on nonexistant table
+        assertTrue(rs.getWasQuerySuccessful()==false);
+        ResultSet rs1 = dataBase1.execute("UPDATE YCStudent SET HomeAddress = 606 WHERE BannerID=800092345;");
+        //attempting an update on nonexistent column
+        assertTrue(rs1.getWasQuerySuccessful()==false);
+        ResultSet rs2 = dataBase1.execute("UPDATE YCStudent SET GPA = 'Family' WHERE BannerID=800092345;");
+        //attempting to update a coulumn witht he wrong data type
+        assertTrue(rs2.getWasQuerySuccessful()==false);
+
+
+
+    }
+
+    /**
+     * tests possible exception for insert query
+     *
+     */
+    @Test
+    public void failedInsertTest() throws JSQLParserException {
+
+        String query = "CREATE TABLE YCStudent"
+                + "("
+                + " BannerID int,"
+                + " Class varchar(255),"
+                + " FirstName varchar(255),"
+                + " LastName varchar(255) NOT NULL,"
+                + " GPA decimal(1,2) DEFAULT 0.00,"
+                + " PRIMARY KEY (BannerID)"
+                + ");";
+
+        dataBase1.execute(query);
+        ResultSet rs =dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',304.4,800092345,'Freshman');");
+        //inserting row with bad decimal whole number lengths
+        assertTrue(rs.getWasQuerySuccessful()==false);
+
+        rs =dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yudi','Meltzer',4.445637,800092345,'Freshman');");
+        //inserting a bad fractional length simply cuts the fraction
+        assertTrue(rs.getWasQuerySuccessful()==true);
+        int index = dataBase1.getTableByName("YCStudent").getColumnIndex("GPA");
+        assertTrue(dataBase1.getTableByName("YCStudent").getTable().get(0).getCell(index).compareTo(4.44)==0);
+
+        dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID, Class) VALUES ('Yosef','Epstein',3.42,800002345,'Freshman');");
+        rs = dataBase1.execute("INSERT INTO YCStudent (FirstName, LastName, GPA, BannerID) VALUES ('Aaron','Shakib',3.0,800002345);");
+        //inserting non unique primary id
+        assertTrue(rs.getWasQuerySuccessful()==false);
+        rs = dataBase1.execute("INSERT INTO YCStudent (FirstName,GPA, BannerID, Class) VALUES ('Yosef',3.42,800002345,'Freshman');");
+        //inserting row with null value in non column
+        assertTrue(rs.getWasQuerySuccessful()==false);
+
+    }
+
+    @Test
+    public void failedSelectTests() throws JSQLParserException {
+        createTwoTables();
+        addRows();
+        ResultSet rs = dataBase1.execute("Select * FROM YCStudent WHERE Teacher='T-Pain'");
+        //attempting where condition on inexsistant column
+        assertTrue(rs.getWasQuerySuccessful()==false);
+        rs = dataBase1.execute("SELECT AVG(AmountOfIceCreamEaten) FROM YCSTUDENT;");
+        //calling function on inexsistent column
+        assertTrue(rs.getWasQuerySuccessful()==false);
+        rs = dataBase1.execute("SELECT AVG(GPA) FROM YU;");
+        //nonexistent table
+        assertTrue(rs.getWasQuerySuccessful()==false);
+        rs = dataBase1.execute("SELECT * FROM YCStudent ORDER BY FavoriteFood ASC, GPA DESC;");
+        //orderby nonexistant column
+        assertTrue(rs.getWasQuerySuccessful()==false);
+
+    }
+
+
 
 }

@@ -155,8 +155,7 @@ public class DBTest {
 
 
         }
-        catch(Exception e){
-
+        catch(Exception e){//catching JSQLParserException instead of putting it in method signature
         }
     }
 
